@@ -6,7 +6,7 @@
 - Bianca Gabrielly 
 - Charles Kaue Barbosa da Silva.
 - Erick 
-- Lauany 
+- Lauany kaliny
 
 **Turma:** 2DS-A
 
@@ -53,6 +53,7 @@ Entre essas informações estão:
 - Situação acadêmica.
 - Boletins.
 - Identificação da equipe responsável.
+- video e botão para acessar o video no yt explicando a aplicalção
 
 Quando essas informações são administradas de maneira descentralizada, podem surgir dificuldades relacionadas à organização, atualização, consulta e acompanhamento do desempenho dos estudantes.
 
@@ -168,13 +169,14 @@ O NotaCerta deverá apresentar uma interface moderna, profissional e intuitiva.
 
 ## Diretrizes visuais
 
-- Cores predominantes: azul-escuro, azul-claro e branco.
+- Cores predominantes: da bandeira de pernambuco e cores da bandeira do governo de estado.
 - Layout organizado e limpo.
 - Elementos com cantos arredondados.
 - Ícones modernos.
 - Cards informativos.
 - Tabelas organizadas.
 - Menu lateral para navegação.
+- Retratil.
 - Animações suaves.
 - Feedback visual nas operações.
 - Formulários intuitivos.
@@ -400,9 +402,9 @@ O NotaCerta deverá implementar uma regra de negócio para determinar automatica
 
 | Média | Resultado |
 |---|---|
-| Menor que 5,0 | Reprovado |
-| De 5,0 até menor que 7,0 | Recuperação |
-| Igual ou superior a 7,0 | Aprovado |
+| Menor que 6,0 | Reprovado |
+| De 5,0 até menor que 6,0 | Recuperação |
+| Igual ou superior a 6,0 | Aprovado |
 | Sem média lançada | Pendente |
 
 ## Identificação visual
@@ -429,6 +431,8 @@ O sistema deverá possuir uma área destinada à consulta dos boletins escolares
 O administrador poderá consultar os boletins dos estudantes cadastrados.
 
 O aluno poderá visualizar exclusivamente seu próprio boletim.
+
+o sistema deve ser usar como trimeste!
 
 ## Informações do boletim
 
@@ -461,6 +465,12 @@ Adicionar uma funcionalidade para imprimir ou salvar o boletim em PDF.
 A impressão deverá utilizar os recursos nativos do navegador.
 
 O documento deverá possuir uma apresentação organizada, adequada para impressão em papel.
+ 
+## formula para o calculo das medias
+
+- terão 4 atidades avaliativas, mas pode ter matirias que so vão usar 1, 2, 3 ou 4, o importante e registrar os compos que foram digitados algum valor. mas a soma tem que ser =<10, as atividades avaliativas e a prova so deverá ter um campo para pora nota.
+- soma todas as notas da at e prova e dividir por 2.
+- um aluno so pode acumular 20 pontos, mais que isso n pode.
 
 ---
 
@@ -710,7 +720,7 @@ O sistema deverá:
 
 1. Abrir o formulário de disciplinas.
 2. Solicitar o nome da disciplina.
-3. Solicitar o código.
+3. sistema cria ou solicita o adm pode escolher o código.
 4. Solicitar a descrição.
 5. Validar as informações.
 6. Verificar se o código já existe.
@@ -737,6 +747,7 @@ O sistema deverá:
 7. Calcular a situação acadêmica.
 8. Atualizar os dados armazenados.
 9. Atualizar as informações do boletim.
+10. deve ter um atalho para mudar de aluno de acordo com a turma no pc pode usar as teclas "A" para voltar "D" para passar para frente e tambem as teclas "<", ">" respectivamente e nos dispositivos moveis tem que ter o atalho tbm para facilitar tant no tablet e nos smarphones.
 
 ---
 
@@ -1028,3 +1039,5 @@ Ao final do desenvolvimento, o NotaCerta deverá ser uma aplicação web capaz d
 - Adaptar-se a computadores, notebooks, tablets e smartphones.
 
 O projeto deverá manter como princípio central a criação de uma solução simples, organizada e funcional para gerenciamento de informações acadêmicas.
+
+no final de cada tarefa vc tem que fazer as devidas alterações nos arquivos docs\CHANGELOG.md e docs\TASKS.md sem falta
