@@ -4,6 +4,14 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/) e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5] - 2026-11-07
+
+### Added
+- **Configuração Oficial PostCSS para Tailwind v4 (Compatibilidade Vercel)**: Instalação de `@tailwindcss/postcss` e `postcss`, criação de `postcss.config.mjs` para garantir compilação universal de estilos tanto localmente quanto nos servidores da Vercel.
+
+### Changed & Fixed
+- **Correção de Estilização na Vercel**: Remoção da flag `--webpack` de `package.json`, padronizando o comando de build para `next build`. Os estilos CSS do Tailwind v4 agora são compilados com 100% de precisão nos deploys de produção.
+
 ## [0.2.4] - 2026-11-07
 
 ### Added

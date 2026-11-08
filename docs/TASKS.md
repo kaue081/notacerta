@@ -27,6 +27,7 @@ Diretrizes rápidas:
 ## ✅ Concluído (Done)
 
 ### 📅 Semana: 02/11 a 19/11
+- [x] Configuração universal de build e PostCSS (`@tailwindcss/postcss`) para resolução definitiva do layout e estilos na Vercel.
 - [x] Suporte a cookies para retenção de informações do YouTube na sessão e remoção total de cookies ao clicar em "Sair" (`clearAllCookies`).
 - [x] Atualização e correção do link do repositório no GitHub para `https://github.com/kaue081/provaweb1`.
 - [x] Sincronização automática dos dados da equipe (5 membros reais, fotos locais em `/FotoEquipe` e links de GitHub) com versionamento de cache no LocalStorage.

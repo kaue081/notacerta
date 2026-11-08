@@ -424,7 +424,6 @@ export default function EquipePage() {
               <IconYoutube className="w-6 h-6 text-red-600" />
               Vídeo de Demonstração da Aplicação
             </h3>
-            
           </div>
 
           <a
