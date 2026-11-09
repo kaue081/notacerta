@@ -27,6 +27,12 @@ export default function DashboardPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [grades, setGrades] = useState<GradeRecord[]>([]);
 
+  const loadData = () => {
+    setStudents(storageService.getStudents());
+    setSubjects(storageService.getSubjects());
+    setGrades(storageService.getGrades());
+  };
+
   useEffect(() => {
     if (!loading) {
       if (!user) {
@@ -38,12 +44,6 @@ export default function DashboardPage() {
       }
     }
   }, [user, loading, router]);
-
-  const loadData = () => {
-    setStudents(storageService.getStudents());
-    setSubjects(storageService.getSubjects());
-    setGrades(storageService.getGrades());
-  };
 
   if (loading || !user || user.role !== "admin") {
     return (

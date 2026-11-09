@@ -37,18 +37,6 @@ export default function AulasPage() {
     message: string;
   } | null>(null);
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/");
-      } else if (user.role !== "professor") {
-        router.push(user.role === "admin" ? "/dashboard" : "/boletins");
-      } else {
-        loadData();
-      }
-    }
-  }, [user, loading, router]);
-
   const loadData = () => {
     const allSubjects = storageService.getSubjects();
     const profSubjectIds = user?.subjectIds || [];
@@ -66,6 +54,18 @@ export default function AulasPage() {
       setDate(new Date().toISOString().split("T")[0]);
     }
   };
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push("/");
+      } else if (user.role !== "professor") {
+        router.push(user.role === "admin" ? "/dashboard" : "/boletins");
+      } else {
+        loadData();
+      }
+    }
+  }, [user, loading, router]);
 
   const handleStartEdit = (les: LessonRecord) => {
     setEditingLesson(les);

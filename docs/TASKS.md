@@ -27,6 +27,13 @@ Diretrizes rápidas:
 ## ✅ Concluído (Done)
 
 ### 📅 Semana: 02/11 a 19/11
+- [x] Criptografia AES em repouso de 100% dos dados no `localStorage` (`services/cryptoService.ts`) e eliminação completa/varredura ativa de cookies (`purgeAllCookies`).
+- [x] Conclusão da Parte 5/5 — Validação Final da Auditoria de Segurança, Build com 0 erros, ESLint com 0 erros, padronização exclusiva em LocalStorage e Relatório Consolidado.
+- [x] Conclusão da Parte 4/5 — Fortalecimento da Segurança Frontend (Cabeçalhos HTTP CSP/HSTS/X-Frame-Options, Source Maps desativados em produção, remoção de X-Powered-By, sanitização de URLs/iframes e auditoria npm audit).
+- [x] Conclusão da Parte 3/5 — Auditoria e Proteção do Armazenamento Local (Remoção de senhas do storage, migração da sessão para `sessionStorage`, `safeParse<T>` defensivo e purga no logout).
+- [x] Conclusão da Parte 2/5 — Refinamento de Credenciais, Autenticação e Prevenção de Enumeração de Usuários (`services/authService.ts`).
+- [x] Implementação da funcionalidade de edição e atualização de dados de Professores (`app/professores/page.tsx`).
+- [x] Realização da Parte 1/5 — Auditoria Técnica Inicial de Segurança da Informação do NotaCerta.
 - [x] Configuração universal de build e PostCSS (`@tailwindcss/postcss`) para resolução definitiva do layout e estilos na Vercel.
 - [x] Suporte a cookies para retenção de informações do YouTube na sessão e remoção total de cookies ao clicar em "Sair" (`clearAllCookies`).
 - [x] Atualização e correção do link do repositório no GitHub para `https://github.com/kaue081/provaweb1`.

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { storageService } from "@/services/storageService";
+import { authService } from "@/services/authService";
 import { PernambucoSunLogo, IconEye, IconEyeOff } from "@/components/icons/Icons";
 import { Alert } from "@/components/ui/Alert";
 
@@ -44,13 +45,7 @@ export function LoginForm() {
       });
       setTimeout(() => {
         const session = storageService.getSession();
-        if (session?.role === "admin") {
-          router.push("/dashboard");
-        } else if (session?.role === "professor") {
-          router.push("/professor");
-        } else {
-          router.push("/boletins");
-        }
+        router.push(authService.getRedirectPathForRole(session?.role));
       }, 300);
     }
   };

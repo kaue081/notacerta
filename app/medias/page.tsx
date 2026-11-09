@@ -44,21 +44,6 @@ function MediasContent() {
     message: string;
   } | null>(null);
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/");
-      } else if (user.role === "admin") {
-        // Conforme solicitado pelo usuário: ADM não tem preenchimento de notas!
-        router.push("/dashboard");
-      } else if (user.role === "aluno") {
-        router.push("/boletins");
-      } else {
-        loadData();
-      }
-    }
-  }, [user, loading, router]);
-
   const loadData = () => {
     const stds = storageService.getStudents();
     const allSubs = storageService.getSubjects();
@@ -88,6 +73,21 @@ function MediasContent() {
       setSelectedStudentId(firstStudent.id);
     }
   };
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push("/");
+      } else if (user.role === "admin") {
+        // Conforme solicitado pelo usuário: ADM não tem preenchimento de notas!
+        router.push("/dashboard");
+      } else if (user.role === "aluno") {
+        router.push("/boletins");
+      } else {
+        loadData();
+      }
+    }
+  }, [user, loading, router]);
 
   const studentsInTurma = students.filter((s) => s.turma === selectedTurma);
   const currentStudentIndex = studentsInTurma.findIndex((s) => s.id === selectedStudentId);

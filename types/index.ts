@@ -17,7 +17,7 @@ export interface Student {
   matricula: string;
   email: string;
   turma: string;
-  password: string;
+  password?: string; // Não persistido em texto claro no localStorage
   createdAt: string;
 }
 
@@ -26,7 +26,7 @@ export interface Professor {
   name: string;
   matricula: string; // Matrícula funcional de professor
   email: string;
-  password: string;
+  password?: string; // Não persistido em texto claro no localStorage
   cargo: string;
   subjectIds: string[]; // Disciplinas que leciona
   createdAt: string;

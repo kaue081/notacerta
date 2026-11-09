@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { storageService, calculateAcademicStatus } from "@/services/storageService";
-import { Student, Subject, GradeRecord, Trimester } from "@/types";
+import { Student, Subject, GradeRecord } from "@/types";
 import { PernambucoSunLogo, IconFileText, IconPrinter } from "@/components/icons/Icons";
 
 export default function BoletinsPage() {
@@ -19,20 +19,6 @@ export default function BoletinsPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [selectedTurma, setSelectedTurma] = useState<string>("TODAS");
   const [emissionDate, setEmissionDate] = useState<string>("07/11/2026");
-
-  useEffect(() => {
-    setEmissionDate(new Date().toLocaleDateString("pt-BR"));
-  }, []);
-
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/");
-      } else {
-        loadData();
-      }
-    }
-  }, [user, loading, router]);
 
   const loadData = () => {
     const stds = storageService.getStudents();
@@ -49,6 +35,20 @@ export default function BoletinsPage() {
       setSelectedStudentId(stds[0].id);
     }
   };
+
+  useEffect(() => {
+    setEmissionDate(new Date().toLocaleDateString("pt-BR"));
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push("/");
+      } else {
+        loadData();
+      }
+    }
+  }, [user, loading, router]);
 
   const handlePrint = () => {
     window.print();

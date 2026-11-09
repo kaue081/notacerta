@@ -4,6 +4,75 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/) e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-11-09
+
+### Security & Privacy (Criptografia AES no LocalStorage & Eliminação Total de Cookies)
+- **Criptografia AES em Repouso (`services/cryptoService.ts`)**:
+  - Implementado serviço criptográfico baseado no algoritmo AES padrão indústria para cifrar 100% dos dados gravados no `localStorage`.
+  - Ao inspecionar o DevTools / Console / Aba Application, qualquer chave (`notacerta_students`, `notacerta_professors`, `notacerta_grades`, `notacerta_session`, `notacerta_lessons`, `notacerta_subjects`, `notacerta_team`) exibe exclusivamente dados cifrados (`U2FsdGVkX1...`).
+  - Decifragem transparente no consumo dos componentes via `storageService.safeParse()` e migração automática de dados legados no `init()`.
+- **Expurgo e Varredura Ativa de Cookies**:
+  - Implementado `cryptoService.purgeAllCookies()` que limpa e expira sumariamente qualquer cookie presente no navegador em todos os caminhos e domínios.
+  - Zero cookies gravados ou retidos pelo sistema.
+
+## [0.5.0] - 2026-11-09
+
+### Security & Quality (Parte 5/5 - Validação Final & Padronização Exclusiva de LocalStorage)
+- **Padronização Exclusiva em `LocalStorage`**:
+  - Remoção de todos os resquícios de `sessionStorage` e `document.cookie`.
+  - Sessão e dados persistentes agora operam 100% sobre `localStorage` com leitura segura defensiva (`safeParse<T>`), simplificando a arquitetura client-side.
+- **Validação de Qualidade de Código & ESLint**:
+  - Resolução completa de todos os erros de ESLint (`0 errors`), incluindo alinhamento de hoisting de funções (`loadData`, `loadStudents`, `loadSubjects`) e descarte de variáveis não utilizadas.
+  - Correção na sintaxe do arquivo de pós-processamento `postcss.config.mjs` com atribuição de variável antes da exportação default.
+- **Validação de Compilação & Build de Produção**:
+  - `npx tsc --noEmit` validado com 0 erros.
+  - `npm run build` gerou com sucesso todas as 13 rotas estáticas em 427ms.
+- **Relatório Final Consolidado da Auditoria**:
+  - Emissão do diagnóstico completo de segurança cobrindo as 5 etapas, comparativo antes vs depois, limitações da arquitetura frontend e plano de ação futuro.
+
+## [0.4.0] - 2026-11-09
+
+### Security & Hardening (Parte 4/5 - Fortalecimento da Segurança Frontend)
+- **Implementação de Cabeçalhos HTTP de Segurança (`next.config.ts`)**:
+  - `Content-Security-Policy (CSP)` restrito, bloqueando injeção de scripts não autorizados, objetos legados (`object-src 'none'`), restrição de formulários (`form-action 'self'`) e incorporação externa (`frame-ancestors 'none'`).
+  - `X-Frame-Options: DENY` e `X-Content-Type-Options: nosniff` para mitigação de Clickjacking (CWE-1021) e MIME-Sniffing (CWE-79).
+  - `Strict-Transport-Security (HSTS)` configurado para 2 anos com subdomínios e preload para conexões HTTPS.
+  - `Referrer-Policy: strict-origin-when-cross-origin` e `Permissions-Policy` desabilitando APIs invasivas do navegador (câmera, microfone, geolocalização).
+- **Supressão de Metadados e Source Maps em Produção**:
+  - Desativação do cabeçalho identificador `poweredByHeader: false` para evitar enumeração de tecnologia (`X-Powered-By: Next.js`).
+  - Configuração explícita de `productionBrowserSourceMaps: false` para proteger código-fonte interno de inspeção desnecessária no DevTools em produção.
+- **Sanitização de URLs e Prevenção de XSS**:
+  - Criação da rotina `sanitizeExternalUrl()` em `app/equipe/page.tsx` para bloquear pseudoprotocolos perigosos (`javascript:`, `data:`, `vbscript:`) em links externos.
+  - Validação estrita de IDs do YouTube via expressão regular em `getCleanYoutubeEmbedUrl()` para impedir injeção arbitrária no `<iframe>`.
+  - Validação de formato de e-mail nos formulários administrativos de Alunos e Professores.
+- **Auditoria de Dependências (`npm audit`)**:
+  - Avaliação técnica demonstrando zero vulnerabilidades de execução em tempo de produção (dependências de runtime enxutas e seguras).
+- **Consolidação de Redirecionamento de Rotas**:
+  - Padronização do redirecionamento na raiz (`/`) utilizando o serviço centralizado `authService.getRedirectPathForRole()`.
+
+## [0.3.1] - 2026-11-09
+
+### Security & Architecture (Parte 3/5 - Auditoria e Proteção do Armazenamento Local)
+- **Remoção de Senhas em Texto Puro do LocalStorage**: As senhas de alunos e professores deixaram de ser persistidas no armazenamento do navegador (`types/index.ts` e `services/storageService.ts`).
+- **Higienização Retroativa de Armazenamento**: Implementada rotina automática em `storageService.init()` que purga qualquer campo `password` residual remanescente de versões anteriores no `LocalStorage`.
+- **Migração de Sessão para `SessionStorage`**: O estado de autenticação ativa (`notacerta_session`) foi migrado de `localStorage` para `sessionStorage`, garantindo isolamento entre abas e autodestruição da sessão assim que a janela ou aba for fechada.
+- **Leitura Defensiva com `safeParse<T>`**: Implementada validação com `try/catch` e checagem de tipos em todos os métodos de leitura (`getStudents`, `getProfessors`, `getSubjects`, `getLessons`, `getGrades`), impedindo crashes causados por JSON corrompido ou adulterações no DevTools.
+- **Purga Abrangente no Logout**: Integração de `clearAllCookies()`, `sessionStorage.clear()` e limpeza de credenciais ao acionar o encerramento de sessão.
+- **Análise Técnica da Web Crypto API**: Documentada a restrição arquitetural em SPAs 100% frontend, concluindo pela eliminação do armazenamento de segredos no navegador ao invés de criptografia cliente fictícia ("Security Theater").
+
+## [0.3.0] - 2026-11-09
+
+### Security & Architecture (Parte 2/5 - Credenciais & Autenticação)
+- **Criação do Serviço Centralizado `authService.ts`**: Desacoplamento da lógica de autenticação dos componentes React, centralizando a validação de identificador e senhas em `services/authService.ts`.
+- **Prevenção de Enumeração de Usuários (CWE-204)**: Unificação das mensagens de erro de autenticação para evitar vazamento da existência de e-mails/matrículas cadastrados.
+- **Mascaramento de Credenciais nos Formulários Administrativos**: Alteração de inputs de senha de `type="text"` para `type="password"` em `app/alunos/page.tsx` e `app/professores/page.tsx`, além de mascarar a exibição da senha na ficha de consulta de alunos para proteção contra *shoulder-surfing*.
+- **Documentação de Limitações de Segurança**: Registro explícito no código e nos relatórios de que autenticações executadas exclusivamente no frontend não devem ser consideradas seguras contra inspeção de código ou engenharia reversa.
+
+## [0.2.6] - 2026-11-09
+
+### Added
+- **Edição e Atualização de Professores**: Implementação da funcionalidade de edição no Corpo Docente (`app/professores/page.tsx`), permitindo ao Administrador selecionar qualquer professor cadastrado (ícone de lápis), carregar seus dados no formulário, atualizar nome, matrícula, e-mail, senha, cargo e disciplinas vinculadas, ou cancelar a edição.
+
 ## [0.2.5] - 2026-11-07
 
 ### Added

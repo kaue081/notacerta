@@ -37,17 +37,8 @@ export default function EquipePage() {
   } | null>(null);
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/");
-      } else {
-        const freshData = storageService.getTeamData();
-        setTeamData(freshData);
-        setProjectName(freshData.projectName);
-        setRepoUrl(freshData.repoUrl);
-        setVideoUrl(freshData.videoUrl);
-        setMembers(freshData.members);
-      }
+    if (!loading && !user) {
+      router.push("/");
     }
   }, [user, loading, router]);
 
@@ -128,27 +119,51 @@ export default function EquipePage() {
 
   if (loading || !user) return null;
 
-  // Converte a URL do YouTube para embed permitindo cookies de reprodução e preferências do player
+  // Valida e sanitiza URLs externas bloqueando protocolos perigosos (javascript:, data:, vbscript:)
+  const sanitizeExternalUrl = (url: string, fallback: string = "#"): string => {
+    if (!url || typeof url !== "string") return fallback;
+    const trimmed = url.trim();
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+        return trimmed;
+      }
+    } catch {
+      if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
+        return trimmed;
+      }
+    }
+    return fallback;
+  };
+
+  // Converte a URL do YouTube para embed seguro, validando o ID do vídeo
   const getCleanYoutubeEmbedUrl = (url: string) => {
     try {
-      if (typeof document !== "undefined") {
-        document.cookie = `notacerta_youtube_info=${encodeURIComponent(
-          url
-        )};path=/;max-age=604800;SameSite=Lax`;
+      if (!url || typeof url !== "string") {
+        return "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ";
       }
-      if (url.includes("youtu.be/")) {
-        const id = url.split("youtu.be/")[1]?.split("?")[0];
-        return `https://www.youtube.com/embed/${id}`;
-      } else if (url.includes("youtube.com/watch")) {
-        const urlParams = new URLSearchParams(new URL(url).search);
-        const id = urlParams.get("v");
-        return id ? `https://www.youtube.com/embed/${id}` : url;
-      } else if (url.includes("youtube.com/embed/")) {
-        return url;
+      const trimmed = url.trim();
+      let videoId: string | null = null;
+
+      if (trimmed.includes("youtu.be/")) {
+        videoId = trimmed.split("youtu.be/")[1]?.split("?")[0]?.split("&")[0] || null;
+      } else if (trimmed.includes("youtube.com/watch")) {
+        const urlParams = new URLSearchParams(new URL(trimmed).search);
+        videoId = urlParams.get("v");
+      } else if (trimmed.includes("youtube.com/embed/")) {
+        videoId = trimmed.split("youtube.com/embed/")[1]?.split("?")[0]?.split("&")[0] || null;
       }
-      return url;
+
+      // Validação estrita de ID do YouTube (somente caracteres alfanuméricos seguros)
+      if (videoId && /^[a-zA-Z0-9_-]{6,15}$/.test(videoId)) {
+        if (typeof window !== "undefined") {
+          storageService.setItem("notacerta_youtube_info", trimmed);
+        }
+        return `https://www.youtube-nocookie.com/embed/${videoId}`;
+      }
+      return "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ";
     } catch {
-      return url;
+      return "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ";
     }
   };
 
@@ -178,7 +193,7 @@ export default function EquipePage() {
         <div className="flex items-center gap-2">
           {/* Botão para acessar o Repositório do Projeto no GitHub */}
           <a
-            href={teamData.repoUrl}
+            href={sanitizeExternalUrl(teamData.repoUrl, "https://github.com")}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider transition shadow cursor-pointer"
@@ -402,7 +417,7 @@ export default function EquipePage() {
               {/* Botão para Acessar Perfil no GitHub */}
               <div className="mt-4 pt-3 border-t border-slate-100">
                 <a
-                  href={member.githubUrl}
+                  href={sanitizeExternalUrl(member.githubUrl, "https://github.com")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs transition cursor-pointer"
@@ -427,7 +442,7 @@ export default function EquipePage() {
           </div>
 
           <a
-            href={teamData.videoUrl}
+            href={sanitizeExternalUrl(teamData.videoUrl, "https://www.youtube.com")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider transition shadow cursor-pointer shrink-0"

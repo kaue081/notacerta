@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { storageService } from "@/services/storageService";
-import { Student, Subject, GradeRecord } from "@/types";
+import { Subject, GradeRecord } from "@/types";
 import {
   IconBookOpen,
   IconUsers,
@@ -21,9 +21,22 @@ export default function ProfessorDashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const [students, setStudents] = useState<Student[]>([]);
   const [mySubjects, setMySubjects] = useState<Subject[]>([]);
   const [grades, setGrades] = useState<GradeRecord[]>([]);
+
+  const loadData = () => {
+    const allSubjects = storageService.getSubjects();
+    const allGrades = storageService.getGrades();
+
+    setGrades(allGrades);
+
+    // Filtrar apenas as matérias interligadas a este professor
+    const profSubjectIds = user?.subjectIds || [];
+    const filteredSubs = allSubjects.filter(
+      (s) => profSubjectIds.includes(s.id) || s.professorId === user?.professorId
+    );
+    setMySubjects(filteredSubs.length > 0 ? filteredSubs : allSubjects);
+  };
 
   useEffect(() => {
     if (!loading) {
@@ -36,22 +49,6 @@ export default function ProfessorDashboardPage() {
       }
     }
   }, [user, loading, router]);
-
-  const loadData = () => {
-    const allStudents = storageService.getStudents();
-    const allSubjects = storageService.getSubjects();
-    const allGrades = storageService.getGrades();
-
-    setStudents(allStudents);
-    setGrades(allGrades);
-
-    // Filtrar apenas as matérias interligadas a este professor
-    const profSubjectIds = user?.subjectIds || [];
-    const filteredSubs = allSubjects.filter(
-      (s) => profSubjectIds.includes(s.id) || s.professorId === user?.professorId
-    );
-    setMySubjects(filteredSubs.length > 0 ? filteredSubs : allSubjects);
-  };
 
   if (loading || !user || user.role !== "professor") {
     return null;

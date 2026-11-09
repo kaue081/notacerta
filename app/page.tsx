@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { authService } from "@/services/authService";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -11,13 +12,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!loading && user) {
-      if (user.role === "admin") {
-        router.push("/dashboard");
-      } else if (user.role === "professor") {
-        router.push("/professor");
-      } else {
-        router.push("/boletins");
-      }
+      router.push(authService.getRedirectPathForRole(user.role));
     }
   }, [user, loading, router]);
 

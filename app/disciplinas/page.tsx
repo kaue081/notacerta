@@ -40,6 +40,10 @@ export default function DisciplinasPage() {
     null
   );
 
+  const loadSubjects = () => {
+    setSubjects(storageService.getSubjects());
+  };
+
   useEffect(() => {
     if (!loading) {
       if (!user) {
@@ -51,10 +55,6 @@ export default function DisciplinasPage() {
       }
     }
   }, [user, loading, router]);
-
-  const loadSubjects = () => {
-    setSubjects(storageService.getSubjects());
-  };
 
   const showToast = (type: "success" | "error", message: string) => {
     setFeedback({ type, message });

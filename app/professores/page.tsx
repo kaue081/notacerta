@@ -11,7 +11,7 @@ import {
   IconPlus,
   IconTrash,
   IconSearch,
-  IconBookOpen,
+  IconPencil,
 } from "@/components/icons/Icons";
 import { Alert } from "@/components/ui/Alert";
 
@@ -23,7 +23,8 @@ export default function ProfessoresPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Formulário de Cadastro
+  // Formulário de Cadastro e Edição
+  const [editingProfessor, setEditingProfessor] = useState<Professor | null>(null);
   const [name, setName] = useState("");
   const [matricula, setMatricula] = useState("");
   const [email, setEmail] = useState("");
@@ -36,6 +37,11 @@ export default function ProfessoresPage() {
     message: string;
   } | null>(null);
 
+  const loadData = () => {
+    setProfessors(storageService.getProfessors());
+    setSubjects(storageService.getSubjects());
+  };
+
   useEffect(() => {
     if (!loading) {
       if (!user) {
@@ -47,11 +53,6 @@ export default function ProfessoresPage() {
       }
     }
   }, [user, loading, router]);
-
-  const loadData = () => {
-    setProfessors(storageService.getProfessors());
-    setSubjects(storageService.getSubjects());
-  };
 
   const handleCreateProfessor = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,10 +68,17 @@ export default function ProfessoresPage() {
       return;
     }
 
+    const trimmedEmail = email.trim() || `${matricula.trim().toLowerCase()}@escola.pe.gov.br`;
+    if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      setAlertInfo({ type: "error", message: "Por favor, informe um formato de e-mail válido." });
+      return;
+    }
+
     const res = storageService.saveProfessor({
+      id: editingProfessor?.id,
       name: name.trim(),
       matricula: matricula.trim().toUpperCase(),
-      email: email.trim() || `${matricula.toLowerCase()}@escola.pe.gov.br`,
+      email: trimmedEmail,
       password: password.trim() || "prof123",
       cargo: cargo.trim() || "Docente Titular",
       subjectIds: selectedSubjects,
@@ -81,15 +89,44 @@ export default function ProfessoresPage() {
       return;
     }
 
-    setAlertInfo({ type: "success", message: `Professor(a) ${name} cadastrado(a) com sucesso!` });
-    setName("");
-    setMatricula("");
-    setEmail("");
-    setSelectedSubjects([]);
+    setAlertInfo({
+      type: "success",
+      message: editingProfessor
+        ? `Informações do(a) Professor(a) ${name} atualizadas com sucesso!`
+        : `Professor(a) ${name} cadastrado(a) com sucesso!`,
+    });
+    handleCancelEdit();
     loadData();
   };
 
+  const handleStartEdit = (prof: Professor) => {
+    setEditingProfessor(prof);
+    setName(prof.name);
+    setMatricula(prof.matricula);
+    setEmail(prof.email);
+    setPassword(prof.password || "prof123");
+    setCargo(prof.cargo || "Docente Titular");
+    setSelectedSubjects(prof.subjectIds || []);
+    setAlertInfo({
+      type: "warning",
+      message: `Modo de edição: altere os dados do(a) Professor(a) ${prof.name} e clique em Salvar Alterações.`,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProfessor(null);
+    setName("");
+    setMatricula("");
+    setEmail("");
+    setPassword("prof123");
+    setCargo("Docente Titular");
+    setSelectedSubjects([]);
+  };
+
   const handleDelete = (id: string, profName: string) => {
+    if (editingProfessor?.id === id) {
+      handleCancelEdit();
+    }
     storageService.deleteProfessor(id);
     loadData();
     setAlertInfo({ type: "success", message: `Professor(a) ${profName} removido(a).` });
@@ -137,11 +174,26 @@ export default function ProfessoresPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Formulário Novo Professor */}
+        {/* Formulário Novo / Edição Professor */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-          <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <IconPlus className="w-5 h-5 text-blue-800" />
-            Cadastrar Novo Professor
+          <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              {editingProfessor ? (
+                <IconPencil className="w-5 h-5 text-yellow-600" />
+              ) : (
+                <IconPlus className="w-5 h-5 text-blue-800" />
+              )}
+              {editingProfessor ? "Atualizar Informações do Professor" : "Cadastrar Novo Professor"}
+            </span>
+            {editingProfessor && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-800 underline cursor-pointer"
+              >
+                Cancelar
+              </button>
+            )}
           </h2>
 
           <form onSubmit={handleCreateProfessor} className="space-y-3">
@@ -176,15 +228,28 @@ export default function ProfessoresPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
-                  Senha Inicial
+                  Senha {editingProfessor ? "(Deixe para manter)" : "Inicial"}
                 </label>
                 <input
-                  type="text"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                E-mail Institucional
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Ex: rogerio.lins@escola.pe.gov.br"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono"
+              />
             </div>
 
             <div>
@@ -223,12 +288,27 @@ export default function ProfessoresPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-2.5 px-4 rounded-xl bg-blue-800 hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider transition shadow cursor-pointer"
-            >
-              Cadastrar Professor
-            </button>
+            <div className="flex gap-2 pt-2">
+              {editingProfessor && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="w-1/3 py-2.5 px-3 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                type="submit"
+                className={`flex-1 py-2.5 px-4 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition shadow cursor-pointer ${
+                  editingProfessor
+                    ? "bg-yellow-600 hover:bg-yellow-700"
+                    : "bg-blue-800 hover:bg-blue-900"
+                }`}
+              >
+                {editingProfessor ? "Salvar Alterações" : "Cadastrar Professor"}
+              </button>
+            </div>
           </form>
         </div>
 
@@ -258,13 +338,22 @@ export default function ProfessoresPage() {
                       <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-blue-100 text-blue-950">
                         {prof.matricula}
                       </span>
-                      <button
-                        onClick={() => handleDelete(prof.id, prof.name)}
-                        className="p-1 rounded text-slate-400 hover:text-red-700 transition"
-                        title="Remover professor"
-                      >
-                        <IconTrash className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleStartEdit(prof)}
+                          className="p-1 rounded text-slate-400 hover:text-blue-700 transition cursor-pointer"
+                          title="Editar informações do professor"
+                        >
+                          <IconPencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(prof.id, prof.name)}
+                          className="p-1 rounded text-slate-400 hover:text-red-700 transition cursor-pointer"
+                          title="Remover professor"
+                        >
+                          <IconTrash className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <h3 className="font-extrabold text-base text-slate-900">{prof.name}</h3>

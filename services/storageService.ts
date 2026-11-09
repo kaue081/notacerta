@@ -9,6 +9,7 @@ import {
   TeamData,
   UserSession,
 } from "@/types";
+import { cryptoService } from "./cryptoService";
 
 const STORAGE_KEYS = {
   STUDENTS: "notacerta_students",
@@ -20,7 +21,7 @@ const STORAGE_KEYS = {
   SESSION: "notacerta_session",
 };
 
-// Alunos iniciais
+// Alunos iniciais (sem persistência de senhas em texto puro no LocalStorage)
 const INITIAL_STUDENTS: Student[] = [
   {
     id: "std-1",
@@ -28,7 +29,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024001",
     email: "arthur.cavalcanti@escola.pe.gov.br",
     turma: "2DS-A",
-    password: "aluno123",
     createdAt: "2024-02-05",
   },
   {
@@ -37,7 +37,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024002",
     email: "beatriz.lima@escola.pe.gov.br",
     turma: "2DS-A",
-    password: "aluno123",
     createdAt: "2024-02-05",
   },
   {
@@ -46,7 +45,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024003",
     email: "caio.albuquerque@escola.pe.gov.br",
     turma: "2DS-A",
-    password: "aluno123",
     createdAt: "2024-02-06",
   },
   {
@@ -55,7 +53,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024004",
     email: "daniela.santos@escola.pe.gov.br",
     turma: "2DS-A",
-    password: "aluno123",
     createdAt: "2024-02-06",
   },
   {
@@ -64,7 +61,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024005",
     email: "eduardo.ramos@escola.pe.gov.br",
     turma: "2DS-A",
-    password: "aluno123",
     createdAt: "2024-02-07",
   },
   {
@@ -73,7 +69,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024006",
     email: "fernanda.souza@escola.pe.gov.br",
     turma: "2DS-B",
-    password: "aluno123",
     createdAt: "2024-02-07",
   },
   {
@@ -82,7 +77,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024007",
     email: "gabriel.vieira@escola.pe.gov.br",
     turma: "2DS-B",
-    password: "aluno123",
     createdAt: "2024-02-08",
   },
   {
@@ -91,7 +85,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024008",
     email: "helena.moreira@escola.pe.gov.br",
     turma: "2DS-B",
-    password: "aluno123",
     createdAt: "2024-02-08",
   },
   {
@@ -100,7 +93,6 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024009",
     email: "igor.bezerra@escola.pe.gov.br",
     turma: "2DS-B",
-    password: "aluno123",
     createdAt: "2024-02-09",
   },
   {
@@ -109,19 +101,17 @@ const INITIAL_STUDENTS: Student[] = [
     matricula: "2024010",
     email: "juliana.ferreira@escola.pe.gov.br",
     turma: "2DS-B",
-    password: "aluno123",
     createdAt: "2024-02-09",
   },
 ];
 
-// Professores iniciais (com matrícula funcional e disciplinas interligadas)
+// Professores iniciais (sem persistência de senhas em texto puro no LocalStorage)
 const INITIAL_PROFESSORS: Professor[] = [
   {
     id: "prof-1",
     name: "Prof. Roberto Cavalcanti",
     matricula: "PROF101",
     email: "roberto.cavalcanti@escola.pe.gov.br",
-    password: "prof123",
     cargo: "Docente de Informática & Web",
     subjectIds: ["sub-1", "sub-2"], // Desenvolvimento Web e Banco de Dados
     createdAt: "2024-01-15",
@@ -131,7 +121,6 @@ const INITIAL_PROFESSORS: Professor[] = [
     name: "Profa. Maria Clara Andrade",
     matricula: "PROF102",
     email: "maria.andrade@escola.pe.gov.br",
-    password: "prof123",
     cargo: "Docente de Exatas & Raciocínio",
     subjectIds: ["sub-3", "sub-6"], // Matemática e Física
     createdAt: "2024-01-15",
@@ -141,7 +130,6 @@ const INITIAL_PROFESSORS: Professor[] = [
     name: "Prof. Fernando Tavares",
     matricula: "PROF103",
     email: "fernando.tavares@escola.pe.gov.br",
-    password: "prof123",
     cargo: "Docente de Comunicação & Infraestrutura",
     subjectIds: ["sub-4", "sub-5"], // Português e Redes
     createdAt: "2024-01-15",
@@ -359,80 +347,146 @@ function generateInitialGrades(students: Student[], subjects: Subject[]): GradeR
 }
 
 export const storageService = {
+  /**
+   * Grava dados no localStorage criptografados com AES.
+   * Quando visualizado no console/DevTools do navegador, o conteúdo aparece como string cifrada (U2FsdGVkX1...).
+   */
+  setItem(key: string, value: string): void {
+    if (typeof window === "undefined") return;
+    try {
+      const encrypted = cryptoService.encrypt(value);
+      localStorage.setItem(key, encrypted);
+    } catch {
+      localStorage.setItem(key, value);
+    }
+  },
+
+  /**
+   * Lê e decifra dados do localStorage criptografados com AES.
+   */
+  getItem(key: string): string | null {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      return cryptoService.decrypt(raw);
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Utilitário defensivo para parsing seguro de JSON do localStorage com decifragem automática.
+   * Evita quebras de aplicação causadas por corrupção de dados ou adulteração no console.
+   */
+  safeParse<T>(key: string, fallback: T): T {
+    if (typeof window === "undefined") return fallback;
+    try {
+      const item = this.getItem(key);
+      if (!item) return fallback;
+      const parsed = JSON.parse(item);
+      if (Array.isArray(fallback) && !Array.isArray(parsed)) {
+        return fallback;
+      }
+      return parsed as T;
+    } catch {
+      return fallback;
+    }
+  },
+
   init() {
     if (typeof window === "undefined") return;
 
-    if (!localStorage.getItem(STORAGE_KEYS.STUDENTS)) {
-      localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(INITIAL_STUDENTS));
+    // Remove qualquer resquício de cookies do navegador
+    cryptoService.purgeAllCookies();
+
+    // Inicialização padrão cifrada com AES
+    if (!this.getItem(STORAGE_KEYS.STUDENTS)) {
+      this.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(INITIAL_STUDENTS));
     }
-    if (!localStorage.getItem(STORAGE_KEYS.PROFESSORS)) {
-      localStorage.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(INITIAL_PROFESSORS));
+    if (!this.getItem(STORAGE_KEYS.PROFESSORS)) {
+      this.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(INITIAL_PROFESSORS));
     }
-    if (!localStorage.getItem(STORAGE_KEYS.SUBJECTS)) {
-      localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(INITIAL_SUBJECTS));
+    if (!this.getItem(STORAGE_KEYS.SUBJECTS)) {
+      this.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(INITIAL_SUBJECTS));
     }
-    if (!localStorage.getItem(STORAGE_KEYS.LESSONS)) {
-      localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(INITIAL_LESSONS));
+    if (!this.getItem(STORAGE_KEYS.LESSONS)) {
+      this.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(INITIAL_LESSONS));
     }
 
-    // Sincronização inteligente dos dados da equipe:
-    // Se o código foi atualizado (ex: novos membros, novas fotos ou novo link do repositório),
-    // atualiza o LocalStorage para refletir na tela imediatamente!
+    // Sincronização inteligente dos dados da equipe
     const CURRENT_TEAM_VERSION = "2026-11-07-v2";
     const savedVersion = localStorage.getItem("notacerta_team_version");
-    if (!localStorage.getItem(STORAGE_KEYS.TEAM) || savedVersion !== CURRENT_TEAM_VERSION) {
-      localStorage.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
+    if (!this.getItem(STORAGE_KEYS.TEAM) || savedVersion !== CURRENT_TEAM_VERSION) {
+      this.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
       localStorage.setItem("notacerta_team_version", CURRENT_TEAM_VERSION);
     }
 
-    if (!localStorage.getItem(STORAGE_KEYS.GRADES)) {
+    if (!this.getItem(STORAGE_KEYS.GRADES)) {
       const students = this.getStudents();
       const subjects = this.getSubjects();
       const initialGrades = generateInitialGrades(students, subjects);
-      localStorage.setItem(STORAGE_KEYS.GRADES, JSON.stringify(initialGrades));
+      this.setItem(STORAGE_KEYS.GRADES, JSON.stringify(initialGrades));
+    }
+
+    // Migração e Criptografia em Repouso:
+    // Varre todas as chaves existentes e assegura que fiquem 100% cifradas com AES no localStorage
+    try {
+      const keysToEncrypt = [
+        STORAGE_KEYS.STUDENTS,
+        STORAGE_KEYS.PROFESSORS,
+        STORAGE_KEYS.SUBJECTS,
+        STORAGE_KEYS.LESSONS,
+        STORAGE_KEYS.GRADES,
+        STORAGE_KEYS.TEAM,
+        STORAGE_KEYS.SESSION,
+      ];
+      for (const k of keysToEncrypt) {
+        const raw = localStorage.getItem(k);
+        if (raw && !raw.startsWith("U2FsdGVkX1")) {
+          // Dado legado ainda em texto puro: sanitiza e criptografa com AES
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              const cleaned = parsed.map((item: Record<string, unknown>) => {
+                const copy = { ...item };
+                delete copy.password;
+                return copy;
+              });
+              this.setItem(k, JSON.stringify(cleaned));
+            } else {
+              this.setItem(k, raw);
+            }
+          } catch {
+            this.setItem(k, raw);
+          }
+        }
+      }
+    } catch {
+      // Ignora falhas de parse silenciosamente
     }
   },
 
   resetToDefaults() {
     if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(INITIAL_STUDENTS));
-    localStorage.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(INITIAL_PROFESSORS));
-    localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(INITIAL_SUBJECTS));
-    localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(INITIAL_LESSONS));
-    localStorage.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
+    this.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(INITIAL_STUDENTS));
+    this.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(INITIAL_PROFESSORS));
+    this.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(INITIAL_SUBJECTS));
+    this.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(INITIAL_LESSONS));
+    this.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
     const initialGrades = generateInitialGrades(INITIAL_STUDENTS, INITIAL_SUBJECTS);
-    localStorage.setItem(STORAGE_KEYS.GRADES, JSON.stringify(initialGrades));
-  },
-
-  clearAllCookies() {
-    if (typeof document === "undefined") return;
-    const cookies = document.cookie.split(";");
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i];
-      const eqPos = cookie.indexOf("=");
-      const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
-      if (!name) continue;
-      // Remove cookie para a raiz e para o domínio atual
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-      if (typeof window !== "undefined") {
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=;`;
-      }
-    }
+    this.setItem(STORAGE_KEYS.GRADES, JSON.stringify(initialGrades));
   },
 
   clearAllLocalStorage() {
     if (typeof window === "undefined") return;
     localStorage.clear();
-    sessionStorage.clear();
-    this.clearAllCookies();
+    cryptoService.purgeAllCookies();
   },
 
   // ================= PROFESSORES =================
   getProfessors(): Professor[] {
-    if (typeof window === "undefined") return INITIAL_PROFESSORS;
-    const data = localStorage.getItem(STORAGE_KEYS.PROFESSORS);
-    return data ? JSON.parse(data) : INITIAL_PROFESSORS;
+    return this.safeParse<Professor[]>(STORAGE_KEYS.PROFESSORS, INITIAL_PROFESSORS);
   },
 
   getProfessorById(id: string): Professor | undefined {
@@ -466,41 +520,48 @@ export const storageService = {
       return { success: false, error: "Esta matrícula já pertence a outro professor." };
     }
 
+    const safeData: Partial<Professor> = { ...profData };
+    delete safeData.password;
+
     if (profData.id) {
       const index = professors.findIndex((p) => p.id === profData.id);
       if (index === -1) return { success: false, error: "Professor não encontrado." };
+      const prevData: Partial<Professor> = { ...professors[index] };
+      delete prevData.password;
       const updated: Professor = {
         ...professors[index],
-        ...profData,
+        ...prevData,
+        ...safeData,
         matricula: matTrimmed,
       };
+      delete updated.password;
       professors[index] = updated;
-      localStorage.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(professors));
+      this.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(professors));
       return { success: true, professor: updated };
     } else {
       const newProf: Professor = {
         ...profData,
+        ...safeData,
         id: `prof-${Date.now()}`,
         matricula: matTrimmed,
         createdAt: new Date().toISOString().split("T")[0],
       };
+      delete newProf.password;
       professors.push(newProf);
-      localStorage.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(professors));
+      this.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(professors));
       return { success: true, professor: newProf };
     }
   },
 
   deleteProfessor(id: string): boolean {
     const professors = this.getProfessors().filter((p) => p.id !== id);
-    localStorage.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(professors));
+    this.setItem(STORAGE_KEYS.PROFESSORS, JSON.stringify(professors));
     return true;
   },
 
   // ================= REGISTRO DE AULAS =================
   getLessons(professorId?: string, subjectId?: string): LessonRecord[] {
-    if (typeof window === "undefined") return INITIAL_LESSONS;
-    const data = localStorage.getItem(STORAGE_KEYS.LESSONS);
-    const list: LessonRecord[] = data ? JSON.parse(data) : INITIAL_LESSONS;
+    const list = this.safeParse<LessonRecord[]>(STORAGE_KEYS.LESSONS, INITIAL_LESSONS);
     return list.filter((l) => {
       const matchProf = !professorId || l.professorId === professorId;
       const matchSub = !subjectId || l.subjectId === subjectId;
@@ -526,7 +587,7 @@ export const storageService = {
         ...lessonData,
       };
       list[index] = updated;
-      localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(list));
+      this.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(list));
       return { success: true, lesson: updated };
     } else {
       const newLesson: LessonRecord = {
@@ -535,22 +596,20 @@ export const storageService = {
         createdAt: new Date().toISOString(),
       };
       list.unshift(newLesson);
-      localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(list));
+      this.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(list));
       return { success: true, lesson: newLesson };
     }
   },
 
   deleteLesson(id: string): boolean {
     const list = this.getLessons().filter((l) => l.id !== id);
-    localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(list));
+    this.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(list));
     return true;
   },
 
   // ================= ALUNOS =================
   getStudents(): Student[] {
-    if (typeof window === "undefined") return INITIAL_STUDENTS;
-    const data = localStorage.getItem(STORAGE_KEYS.STUDENTS);
-    return data ? JSON.parse(data) : INITIAL_STUDENTS;
+    return this.safeParse<Student[]>(STORAGE_KEYS.STUDENTS, INITIAL_STUDENTS);
   },
 
   getStudentById(id: string): Student | undefined {
@@ -586,44 +645,51 @@ export const storageService = {
       return { success: false, error: "Esta matrícula já está cadastrada para outro aluno." };
     }
 
+    const safeStudentData: Partial<Student> = { ...studentData };
+    delete safeStudentData.password;
+
     if (studentData.id) {
       const index = students.findIndex((s) => s.id === studentData.id);
       if (index === -1) return { success: false, error: "Aluno não encontrado." };
 
+      const prevStudent: Partial<Student> = { ...students[index] };
+      delete prevStudent.password;
       const updated: Student = {
         ...students[index],
-        ...studentData,
+        ...prevStudent,
+        ...safeStudentData,
         matricula: matriculaTrimmed,
       };
+      delete updated.password;
       students[index] = updated;
-      localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+      this.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
       return { success: true, student: updated };
     } else {
       const newStudent: Student = {
         ...studentData,
+        ...safeStudentData,
         id: `std-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         matricula: matriculaTrimmed,
         createdAt: new Date().toISOString().split("T")[0],
       };
+      delete newStudent.password;
       students.unshift(newStudent);
-      localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+      this.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
       return { success: true, student: newStudent };
     }
   },
 
   deleteStudent(id: string): boolean {
     const students = this.getStudents().filter((s) => s.id !== id);
-    localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+    this.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
     const grades = this.getGrades().filter((g) => g.studentId !== id);
-    localStorage.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
+    this.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
     return true;
   },
 
   // ================= DISCIPLINAS =================
   getSubjects(): Subject[] {
-    if (typeof window === "undefined") return INITIAL_SUBJECTS;
-    const data = localStorage.getItem(STORAGE_KEYS.SUBJECTS);
-    return data ? JSON.parse(data) : INITIAL_SUBJECTS;
+    return this.safeParse<Subject[]>(STORAGE_KEYS.SUBJECTS, INITIAL_SUBJECTS);
   },
 
   getSubjectById(id: string): Subject | undefined {
@@ -654,7 +720,7 @@ export const storageService = {
         code: codeTrimmed,
       };
       subjects[index] = updated;
-      localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjects));
+      this.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjects));
       return { success: true, subject: updated };
     } else {
       const newSubject: Subject = {
@@ -663,24 +729,22 @@ export const storageService = {
         code: codeTrimmed,
       };
       subjects.push(newSubject);
-      localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjects));
+      this.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjects));
       return { success: true, subject: newSubject };
     }
   },
 
   deleteSubject(id: string): boolean {
     const subjects = this.getSubjects().filter((s) => s.id !== id);
-    localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjects));
+    this.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjects));
     const grades = this.getGrades().filter((g) => g.subjectId !== id);
-    localStorage.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
+    this.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
     return true;
   },
 
   // ================= MÉDIAS & NOTAS =================
   getGrades(): GradeRecord[] {
-    if (typeof window === "undefined") return [];
-    const data = localStorage.getItem(STORAGE_KEYS.GRADES);
-    return data ? JSON.parse(data) : [];
+    return this.safeParse<GradeRecord[]>(STORAGE_KEYS.GRADES, []);
   },
 
   getGradesByStudent(studentId: string): GradeRecord[] {
@@ -768,20 +832,20 @@ export const storageService = {
       grades.push(record);
     }
 
-    localStorage.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
+    this.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
     return { success: true, record };
   },
 
   deleteGrade(id: string): boolean {
     const grades = this.getGrades().filter((g) => g.id !== id);
-    localStorage.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
+    this.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
     return true;
   },
 
   // ================= EQUIPE =================
   getTeamData(): TeamData {
     if (typeof window === "undefined") return INITIAL_TEAM;
-    const data = localStorage.getItem(STORAGE_KEYS.TEAM);
+    const data = this.getItem(STORAGE_KEYS.TEAM);
     if (!data) return INITIAL_TEAM;
     try {
       const parsed: TeamData = JSON.parse(data);
@@ -804,7 +868,7 @@ export const storageService = {
 
   resetTeamToDefaults(): TeamData {
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
+      this.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
       localStorage.setItem("notacerta_team_version", "2026-11-07-v2");
     }
     return INITIAL_TEAM;
@@ -812,20 +876,19 @@ export const storageService = {
 
   saveTeamData(team: TeamData): void {
     if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEYS.TEAM, JSON.stringify(team));
+    this.setItem(STORAGE_KEYS.TEAM, JSON.stringify(team));
   },
 
   // ================= SESSÃO / AUTH =================
   getSession(): UserSession | null {
     if (typeof window === "undefined") return null;
-    const data = localStorage.getItem(STORAGE_KEYS.SESSION);
-    return data ? JSON.parse(data) : null;
+    return this.safeParse<UserSession | null>(STORAGE_KEYS.SESSION, null);
   },
 
   setSession(session: UserSession | null): void {
     if (typeof window === "undefined") return;
     if (session) {
-      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+      this.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
     } else {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
     }

@@ -16,7 +16,6 @@ import {
   IconTrash,
   IconX,
   IconAlertTriangle,
-  IconCheckCircle,
   IconEye,
 } from "@/components/icons/Icons";
 
@@ -46,6 +45,10 @@ export default function AlunosPage() {
     null
   );
 
+  const loadStudents = () => {
+    setStudents(storageService.getStudents());
+  };
+
   useEffect(() => {
     if (!loading) {
       if (!user) {
@@ -57,10 +60,6 @@ export default function AlunosPage() {
       }
     }
   }, [user, loading, router]);
-
-  const loadStudents = () => {
-    setStudents(storageService.getStudents());
-  };
 
   const showToast = (type: "success" | "error", message: string) => {
     setFeedback({ type, message });
@@ -89,7 +88,7 @@ export default function AlunosPage() {
     setMatricula(std.matricula);
     setEmail(std.email);
     setTurma(std.turma);
-    setPassword(std.password);
+    setPassword(std.password || "");
     setIsModalOpen(true);
   };
 
@@ -97,6 +96,11 @@ export default function AlunosPage() {
     e.preventDefault();
     if (!name.trim() || !matricula.trim() || !email.trim() || !turma.trim()) {
       showToast("error", "Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      showToast("error", "Por favor, informe um formato de e-mail válido.");
       return;
     }
 
@@ -380,7 +384,7 @@ export default function AlunosPage() {
                   Senha de Acesso do Aluno *
                 </label>
                 <input
-                  type="text"
+                  type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -513,8 +517,8 @@ export default function AlunosPage() {
                 <span className="text-slate-400 font-bold block uppercase text-[10px]">
                   Senha de Consulta do Aluno
                 </span>
-                <span className="font-mono font-bold text-slate-800">
-                  {viewingStudent.password || "aluno123"}
+                <span className="font-mono font-bold text-slate-700 tracking-widest">
+                  •••••••• (Protegida)
                 </span>
               </div>
 
