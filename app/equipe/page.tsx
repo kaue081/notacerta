@@ -106,8 +106,8 @@ export default function EquipePage() {
     e.preventDefault();
     const updatedData: TeamData = {
       projectName: projectName.trim() || "NotaCerta",
-      repoUrl: repoUrl.trim() || "https://github.com",
-      videoUrl: videoUrl.trim() || "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+      repoUrl: repoUrl.trim() || "https://github.com/kaue081/provaweb1",
+      videoUrl: videoUrl.trim() || "https://youtu.be/28G_kpc4hsE?si=PmoVXziCZiftIYRM",
       members,
     };
 
@@ -140,9 +140,18 @@ export default function EquipePage() {
   const getCleanYoutubeEmbedUrl = (url: string) => {
     try {
       if (!url || typeof url !== "string") {
-        return "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ";
+        return "https://www.youtube-nocookie.com/embed/28G_kpc4hsE";
       }
-      const trimmed = url.trim();
+      let trimmed = url.trim();
+
+      // Suporte caso o usuário cole o código <iframe> inteiro
+      if (trimmed.includes('src="') || trimmed.includes("src='")) {
+        const srcMatch = trimmed.match(/src=["']([^"']+)["']/);
+        if (srcMatch && srcMatch[1]) {
+          trimmed = srcMatch[1];
+        }
+      }
+
       let videoId: string | null = null;
 
       if (trimmed.includes("youtu.be/")) {
@@ -161,9 +170,9 @@ export default function EquipePage() {
         }
         return `https://www.youtube-nocookie.com/embed/${videoId}`;
       }
-      return "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ";
+      return "https://www.youtube-nocookie.com/embed/28G_kpc4hsE";
     } catch {
-      return "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ";
+      return "https://www.youtube-nocookie.com/embed/28G_kpc4hsE";
     }
   };
 

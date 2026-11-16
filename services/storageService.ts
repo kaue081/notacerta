@@ -185,7 +185,7 @@ const INITIAL_SUBJECTS: Subject[] = [
 const INITIAL_TEAM: TeamData = {
   projectName: "NotaCerta",
   repoUrl: "https://github.com/kaue081/provaweb1",
-  videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  videoUrl: "https://youtu.be/28G_kpc4hsE?si=PmoVXziCZiftIYRM",
   members: [
     {
       id: "mem-1",
@@ -415,7 +415,7 @@ export const storageService = {
     }
 
     // Sincronização inteligente dos dados da equipe
-    const CURRENT_TEAM_VERSION = "2026-11-07-v2";
+    const CURRENT_TEAM_VERSION = "2026-11-16-v3";
     const savedVersion = localStorage.getItem("notacerta_team_version");
     if (!this.getItem(STORAGE_KEYS.TEAM) || savedVersion !== CURRENT_TEAM_VERSION) {
       this.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
@@ -845,6 +845,13 @@ export const storageService = {
   // ================= EQUIPE =================
   getTeamData(): TeamData {
     if (typeof window === "undefined") return INITIAL_TEAM;
+    const CURRENT_TEAM_VERSION = "2026-11-16-v3";
+    const savedVersion = localStorage.getItem("notacerta_team_version");
+    if (savedVersion !== CURRENT_TEAM_VERSION) {
+      this.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
+      localStorage.setItem("notacerta_team_version", CURRENT_TEAM_VERSION);
+      return INITIAL_TEAM;
+    }
     const data = this.getItem(STORAGE_KEYS.TEAM);
     if (!data) return INITIAL_TEAM;
     try {
@@ -869,7 +876,7 @@ export const storageService = {
   resetTeamToDefaults(): TeamData {
     if (typeof window !== "undefined") {
       this.setItem(STORAGE_KEYS.TEAM, JSON.stringify(INITIAL_TEAM));
-      localStorage.setItem("notacerta_team_version", "2026-11-07-v2");
+      localStorage.setItem("notacerta_team_version", "2026-11-16-v3");
     }
     return INITIAL_TEAM;
   },

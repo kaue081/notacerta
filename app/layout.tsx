@@ -5,6 +5,14 @@ import { AuthProvider } from "@/context/AuthContext";
 export const metadata: Metadata = {
   title: "NotaCerta — Sistema de Gerenciamento Escolar",
   description: "Gerenciamento escolar de alunos, disciplinas, médias e boletins com identidade visual de Pernambuco.",
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

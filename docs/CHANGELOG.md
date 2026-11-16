@@ -4,6 +4,30 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/) e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-11-16
+
+### Changed
+- **Ajuste e Centralização do Favicon**:
+  - Atualização do ícone com proporção 1:1 perfeitamente centralizada e recorte simétrico.
+  - Substituição em `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png` e espelhamentos em `public/`.
+
+## [0.5.3] - 2026-11-16
+
+### Added & Changed
+- **Ícone e Favicon Oficial do NotaCerta em Todas as Páginas**:
+  - Substituição do ícone padrão do Next.js ("N" preto) pelo brasão circular com o Sol e Arco-íris de Pernambuco.
+  - Atualização dos arquivos `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png` e espelhamento em `public/`.
+  - Configuração global no `metadata.icons` de `app/layout.tsx` para exibição na aba do navegador em 100% das páginas e perfis (Admin, Professor, Aluno e Login).
+
+## [0.5.2] - 2026-11-16
+
+### Changed
+- **Vídeo de Apresentação e Link Oficial da Equipe (`/equipe`)**:
+  - Atualizado o vídeo incorporado no player da aplicação para o novo ID `28G_kpc4hsE` (`https://www.youtube-nocookie.com/embed/28G_kpc4hsE`).
+  - Atualizado o link oficial do botão "Abrir no YouTube" para `https://youtu.be/28G_kpc4hsE?si=PmoVXziCZiftIYRM`.
+  - Incrementado versionamento de sincronização para `2026-11-16-v3` em `services/storageService.ts`, garantindo atualização imediata no navegador de todos os usuários.
+  - Adicionado suporte a colagem direta de tags `<iframe>` no campo de edição do vídeo.
+
 ## [0.5.1] - 2026-11-09
 
 ### Security & Privacy (Criptografia AES no LocalStorage & Eliminação Total de Cookies)

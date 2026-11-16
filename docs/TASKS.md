@@ -12,9 +12,6 @@ Diretrizes rápidas:
 ### 🔴 Alta Prioridade
 - [ ] Validação final de homologação com os docentes e discentes da turma 2DS-A.
 
-### 🟡 Média Prioridade
-- [ ] Gravação e inserção do link do vídeo explicativo final no YouTube (modo privacy-enhanced).
-
 ---
 
 ## ⏳ A Fazer (Backlog Priorizado)
@@ -27,6 +24,8 @@ Diretrizes rápidas:
 ## ✅ Concluído (Done)
 
 ### 📅 Semana: 02/11 a 19/11
+- [x] Substituição do favicon padrão do Next.js pelo brasão do Sol de Pernambuco em todas as abas e páginas do sistema (`app/layout.tsx`, `favicon.ico`, `icon.png`).
+- [x] Inserção do link e incorporação do vídeo explicativo oficial no YouTube (`28G_kpc4hsE`) na página `/equipe`.
 - [x] Criptografia AES em repouso de 100% dos dados no `localStorage` (`services/cryptoService.ts`) e eliminação completa/varredura ativa de cookies (`purgeAllCookies`).
 - [x] Conclusão da Parte 5/5 — Validação Final da Auditoria de Segurança, Build com 0 erros, ESLint com 0 erros, padronização exclusiva em LocalStorage e Relatório Consolidado.
 - [x] Conclusão da Parte 4/5 — Fortalecimento da Segurança Frontend (Cabeçalhos HTTP CSP/HSTS/X-Frame-Options, Source Maps desativados em produção, remoção de X-Powered-By, sanitização de URLs/iframes e auditoria npm audit).
