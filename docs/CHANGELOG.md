@@ -4,6 +4,14 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/) e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2026-11-16
+
+### Changed
+- **Atualização do Vídeo e Link da Equipe (`/equipe`)**:
+  - Atualizado o vídeo incorporado no player da aplicação para o novo ID `utydi-o3gw8` (`https://www.youtube-nocookie.com/embed/utydi-o3gw8`).
+  - Atualizado o link oficial do botão "Abrir no YouTube" para `https://youtu.be/utydi-o3gw8?si=JS54YEbIXpRLW9n-`.
+  - Incrementado versionamento de sincronização para `2026-11-16-v4` em `services/storageService.ts`, garantindo que o novo vídeo carregue automaticamente no navegador de todos os usuários.
+
 ## [0.5.4] - 2026-11-16
 
 ### Changed

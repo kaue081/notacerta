@@ -107,7 +107,7 @@ export default function EquipePage() {
     const updatedData: TeamData = {
       projectName: projectName.trim() || "NotaCerta",
       repoUrl: repoUrl.trim() || "https://github.com/kaue081/provaweb1",
-      videoUrl: videoUrl.trim() || "https://youtu.be/28G_kpc4hsE?si=PmoVXziCZiftIYRM",
+      videoUrl: videoUrl.trim() || "https://youtu.be/utydi-o3gw8?si=JS54YEbIXpRLW9n-",
       members,
     };
 
@@ -140,7 +140,7 @@ export default function EquipePage() {
   const getCleanYoutubeEmbedUrl = (url: string) => {
     try {
       if (!url || typeof url !== "string") {
-        return "https://www.youtube-nocookie.com/embed/28G_kpc4hsE";
+        return "https://www.youtube-nocookie.com/embed/utydi-o3gw8";
       }
       let trimmed = url.trim();
 
@@ -170,9 +170,9 @@ export default function EquipePage() {
         }
         return `https://www.youtube-nocookie.com/embed/${videoId}`;
       }
-      return "https://www.youtube-nocookie.com/embed/28G_kpc4hsE";
+      return "https://www.youtube-nocookie.com/embed/utydi-o3gw8";
     } catch {
-      return "https://www.youtube-nocookie.com/embed/28G_kpc4hsE";
+      return "https://www.youtube-nocookie.com/embed/utydi-o3gw8";
     }
   };
 
